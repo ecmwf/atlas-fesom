@@ -96,6 +96,7 @@ int Tool::execute( const Args& args ) {
     }
 
     bool yaml_output = args.getBool( "yaml", false );
+    bool verbose = args.getBool("verbose", false);
 
     std::string name       = args.getString( "name", "unnamed" );
     std::string outputfile = args.getString( "output", name + ".atlas" );
@@ -103,10 +104,16 @@ int Tool::execute( const Args& args ) {
     args.get("input-format", input_format);
     if ( input_format.empty() ) {
         std::string extension = input.substr( input.find_last_of( '.' ) );
-        if ( extension == ".nc" ) {
+        if (extension == ".nc") {
+            if (verbose) {
+                Log::info() << "Autodetected NetCDF format" << std::endl;
+            }
             input_format = "netcdf";
         }
-        else if ( extension == ".atlas" ) {
+        else if (extension == ".atlas") {
+            if (verbose) {
+                Log::info() << "Autodetected atlas-io format" << std::endl;
+            }
             input_format = "atlas-io";
         }
         else {
@@ -122,6 +129,9 @@ int Tool::execute( const Args& args ) {
     FesomData data;
 
     if ( input_format.find( "netcdf" ) == 0 ) {
+        Log::warning() << "Warning: NetCDF files may have coordinates that are different to original ascii-encoded"
+                       << " coordinates, to machine precision, leading to differently computed uid."
+                       << std::endl;
         NetCDFReader{args}.read( input, data );
     }
     else if ( input_format == "atlas-io" ) {

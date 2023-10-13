@@ -20,6 +20,8 @@ ecbuild_add_executable( TARGET atlas-fesom-convert
                                 NetCDFReader.cc
                                 FesomData.cc
                                 FesomData.h
+                                AtlasIOReader.h
+                                AsciiReader.h
                         LIBS atlas-fesom )
 
 target_compile_definitions( atlas-fesom-convert PRIVATE ATLAS_FESOM_HAVE_NETCDF=${HAVE_NETCDF} )
