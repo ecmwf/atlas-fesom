@@ -6,16 +6,18 @@ CORE2: &CORE2
     type: FESOM
     name: CORE2
     nb_nodes: 126858
-    uid: 300428f2ebd70955463bfbec2bd191a2
+    nb_cells: 244659
+    uid: 1d03f0efefdc1a3a8798ad53ee983140
     data: file:///Users/willem/work/atlas-bundle/fesom-meshes/CORE2.atlas
-300428f2ebd70955463bfbec2bd191a2: *CORE2
+1d03f0efefdc1a3a8798ad53ee983140: *CORE2
 
 ### NG5 (NextGEMS 5km)
 
 NG5: &NG5
     type: FESOM
     name: NG5
-    nb_nodes: 126858
+    nb_nodes: 7402886
+    nb_cells: 14741520
     uid: 7a33ecaebe22e7d5ca4abbd819a43240
     data: file:///Users/willem/work/atlas-bundle/fesom-meshes/NG5.atlas
 7a33ecaebe22e7d5ca4abbd819a43240: *NG5
@@ -26,6 +28,18 @@ fesom-pi: &fesom-pi
     type: FESOM
     name: fesom-pi
     nb_nodes: 3140
-    uid:  bdc49d97a27e389fb86decd08a185c2f
+    nb_cells: 5839
+    uid: bdc49d97a27e389fb86decd08a185c2f
     data: file:///Users/willem/work/atlas-bundle/fesom-meshes/fesom-pi.atlas
 bdc49d97a27e389fb86decd08a185c2f: *fesom-pi
+
+### fesom-soufflet
+
+fesom-soufflet: &fesom-soufflet
+    type: FESOM
+    name: fesom-soufflet
+    nb_nodes: 2875
+    nb_cells: 5700
+    uid: d13c48fb4f2079896928152d0bebe1ba
+    data: file:///Users/willem/work/atlas-bundle/fesom-meshes/fesom-soufflet.atlas
+d13c48fb4f2079896928152d0bebe1ba: *fesom-soufflet
