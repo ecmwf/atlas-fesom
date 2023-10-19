@@ -3,43 +3,54 @@
 ### CORE2 (Coordinated Ocean-ice Reference Experiments v2)
 
 CORE2: &CORE2
-    type: FESOM
+    type: mesh
     name: CORE2
     nb_nodes: 126858
     nb_cells: 244659
     uid: 1d03f0efefdc1a3a8798ad53ee983140
-    data: file:///Users/willem/work/atlas-bundle/fesom-meshes/CORE2.atlas
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/CORE2.atlas
 1d03f0efefdc1a3a8798ad53ee983140: *CORE2
 
 ### NG5 (NextGEMS 5km)
 
 NG5: &NG5
-    type: FESOM
+    type: mesh
     name: NG5
     nb_nodes: 7402886
     nb_cells: 14741520
     uid: 7a33ecaebe22e7d5ca4abbd819a43240
-    data: file:///Users/willem/work/atlas-bundle/fesom-meshes/NG5.atlas
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/NG5.atlas
 7a33ecaebe22e7d5ca4abbd819a43240: *NG5
+
+### FORCA025 ( from /ec/res4/hpcperm/natr/RAPS/20/inputs/fesom/v21/fesom_orca025/2020012000/NEMO_ecmwf )
+
+FORCA025: &FORCA025
+    type: mesh
+    name: FORCA025
+    nb_nodes: 912469
+    nb_cells: 1801435
+    uid: e334b2912721077744d0764f6db12d76
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/FORCA025.atlas
+e334b2912721077744d0764f6db12d76: *FORCA025
 
 ### fesom-pi
 
 fesom-pi: &fesom-pi
-    type: FESOM
+    type: mesh
     name: fesom-pi
     nb_nodes: 3140
     nb_cells: 5839
     uid: bdc49d97a27e389fb86decd08a185c2f
-    data: file:///Users/willem/work/atlas-bundle/fesom-meshes/fesom-pi.atlas
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-pi.atlas
 bdc49d97a27e389fb86decd08a185c2f: *fesom-pi
 
 ### fesom-soufflet
 
 fesom-soufflet: &fesom-soufflet
-    type: FESOM
+    type: mesh
     name: fesom-soufflet
     nb_nodes: 2875
     nb_cells: 5700
     uid: d13c48fb4f2079896928152d0bebe1ba
-    data: file:///Users/willem/work/atlas-bundle/fesom-meshes/fesom-soufflet.atlas
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-soufflet.atlas
 d13c48fb4f2079896928152d0bebe1ba: *fesom-soufflet
