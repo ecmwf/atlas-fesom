@@ -47,6 +47,16 @@ public:
         return value;
     }
 
+    template<typename Value>
+    void nb_nodes(Value& value) {
+        value = nb_nodes();
+    }
+
+    template<typename Value>
+    void nb_cells(Value& value) {
+        value = nb_cells();
+    }
+
     void longitude(std::vector<double>& value) {
         reader_.read("longitude",value).wait();
     }

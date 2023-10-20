@@ -30,49 +30,92 @@ namespace grid {
 namespace detail {
 namespace grid {
 
-
 static class FesomGridBuilder : public GridBuilder {
     using Implementation = atlas::Grid::Implementation;
     using Config         = Grid::Config;
 
 public:
-    FesomGridBuilder() : GridBuilder( Fesom::static_type(), {"^FESOM[0-9]"}, {"FESOM<N>"} ) {}
+    FesomGridBuilder() : GridBuilder( FesomNodes::static_type() ) {}
+
+    const std::string& type() const override {
+        static std::string _type{"unstructured"};
+        return _type;
+    }
 
     void print( std::ostream& os ) const override {
         os << std::left << std::setw( 30 ) << "FESOM<N>"
-           << "FESOM Tripolar grid. Possible increasing resolutions <deg>: 2,1,025,12";
+           << "FESOM unstructured ocean grid. Possible increasing resolutions <deg>: 2,1,025,12";
     }
 
     const Implementation* create( const std::string& name_or_uid, const Config& /* config */ ) const override {
         auto sane_id( name_or_uid );
+
+        if ( SpecRegistry::has( sane_id ) ) {
+            return create( SpecRegistry::get( sane_id ) );
+        }
+
         std::transform( sane_id.begin(), sane_id.end(), sane_id.begin(), ::tolower );
 
         if ( SpecRegistry::has( sane_id ) ) {
             return create( SpecRegistry::get( sane_id ) );
         }
 
-        auto sane_name( name_or_uid );
-        std::transform( sane_name.begin(), sane_name.end(), sane_name.begin(), ::toupper );
+        std::transform( sane_id.begin(), sane_id.end(), sane_id.begin(), ::toupper );
 
-        if ( SpecRegistry::has( sane_name ) ) {
-            return create( SpecRegistry::get( sane_name ) );
+        if ( SpecRegistry::has( sane_id ) ) {
+            return create( SpecRegistry::get( sane_id ) );
         }
 
         return nullptr;
     }
 
     const Implementation* create( const Config& config ) const override {
+        std::string type;
+        config.get("type",type);
+        if (type != "FESOM") {
+            return nullptr;
+        }
 
         std::string name = config.getString("name");
         std::string uid = config.getString("uid");
-
+        std::string functionspace = config.getString("functionspace");
+        
         fesom::AtlasIOReader read(fesom::FesomDataFile(config.getString("data")));
         std::vector<double> lon;
         std::vector<double> lat;
+        std::size_t nb_nodes{0};
+        read.nb_nodes(nb_nodes);
         read.longitude(lon);
         read.latitude(lat);
-        auto nb_nodes = read.nb_nodes();
-        return new Fesom(name, uid, nb_nodes, lon.data(), lat.data());
+        if (functionspace == "nodes") {
+            return new FesomNodes(name, uid, nb_nodes, lon.data(), lat.data());
+        }
+        else if (functionspace == "cells") {
+            double cyclic_length = 360.;
+            std::size_t nb_cells{0};
+            std::vector<std::array<std::int64_t,3>> triangles;
+            read.nb_cells(nb_cells);
+            read.connectivity_cell2node(triangles);
+            ATLAS_ASSERT(triangles.size() == nb_cells);
+            std::vector<double> clon(nb_cells);
+            std::vector<double> clat(nb_cells);
+            size_t j{0};
+            for (const auto& triangle: triangles) {
+                std::array<double,3> triangle_lons{lon[triangle[0]], lon[triangle[1]], lon[triangle[2]]};
+                std::array<double,3> triangle_lats{lat[triangle[0]], lat[triangle[1]], lat[triangle[2]]};
+                const double lon_min = *std::min_element(triangle_lons.begin(), triangle_lons.end());
+                for (auto& l: triangle_lons) {
+                    if (l - lon_min > cyclic_length*0.5) {
+                        l -= cyclic_length;
+                    }
+                }
+                clon[j] = std::accumulate(triangle_lons.begin(),triangle_lons.end(),0.) / triangle_lons.size();
+                clat[j] = std::accumulate(triangle_lats.begin(),triangle_lats.end(),0.) / triangle_lats.size();
+                ++j;
+            }
+            return new FesomCentroids(name, uid, nb_cells, clon.data(), clat.data());
+        }
+        ATLAS_THROW_EXCEPTION("Unrecognised value for key 'functionspace': " << functionspace);
     }
 
     void force_link() {}

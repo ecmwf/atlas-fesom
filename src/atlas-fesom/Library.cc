@@ -17,7 +17,7 @@
 #include "atlas-fesom/version.h"
 #include "atlas/grid/SpecRegistry.h"
 #include "atlas/library/Library.h"
-
+#include "atlas/grid/detail/grid/GridBuilder.h"
 
 namespace atlas {
 class Grid;
@@ -55,9 +55,15 @@ void Library::init() {
     Plugin::init();
     auto grids = util::Config( gridsPath() );
     for ( auto& id : grids.keys() ) {
-        Log::debug() << "Plugin atlas-fesom registering grid " << id << std::endl;
-        Log::debug() << grids.getSubConfiguration( id ) << std::endl;
-        grid::SpecRegistry::add( id, grids.getSubConfiguration( id ) );
+        auto spec = grids.getSubConfiguration(id);
+        if (spec.getString("type","") == "FESOM") {
+            Log::debug() << "Plugin atlas-fesom registering grid " << id << std::endl;
+            grid::SpecRegistry::add(id, spec);
+            if (id != spec.getString("uid")) {
+                grid::GridBuilder& grid_builder = *grid::GridBuilder::typeRegistry().at("fesom");
+                grid_builder.registerNamedGrid(id);
+            }
+        }
     }
 }
 
