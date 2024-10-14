@@ -61,6 +61,27 @@ tORCA025_C: &tORCA025_C
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/tORCA025.atlas
 5d6a95991201163fab7964e4ad04ed34: *tORCA025_C
 
+# ### DART ( from /perm/ecm4053/FESOM-grids/DART )
+
+DART_N: &DART_N
+    type: FESOM
+    name: DART_N
+    functionspace: nodes
+    size: 3160340
+    uid: 35e958b1dfd9054bb86f283d75ccd7b4
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/DART.atlas
+35e958b1dfd9054bb86f283d75ccd7b4: *DART_N
+
+DART_C: &DART_C
+    type: FESOM
+    name: DART_C
+    functionspace: cells
+    size: 6262485
+    uid: de015703cf0c3b339a9f0f6ec080e4f6
+    data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/DART.atlas
+de015703cf0c3b339a9f0f6ec080e4f6: *DART_C
+
+
 # ### fesom-pi
 
 fesom-pi_N: &fesom-pi_N
