@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 
 #include "atlas-fesom/Library.h"
 
