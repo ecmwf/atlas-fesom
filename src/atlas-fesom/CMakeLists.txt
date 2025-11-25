@@ -20,6 +20,8 @@ ecbuild_add_library(
         grid/Fesom.cc
         grid/Fesom.h
         grid/FesomGridBuilder.cc
+        grid/FesomPartitioner.cc
+        grid/FesomPartitioner.h
         meshgenerator/FesomMeshGenerator.cc
         meshgenerator/FesomMeshGenerator.h
         util/AtlasIOReader.h
