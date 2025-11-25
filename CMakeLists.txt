@@ -22,6 +22,11 @@ if( NOT eckit_HAVE_LZ4 )
                   "Continuing regardless with reduced tests" )
 endif()
 
+ecbuild_add_option( FEATURE METIS
+                    DESCRIPTION "Add support for unstructured domain decomposition using Metis"
+                    REQUIRED_PACKAGES "METIS VERSION 5"
+)
+
 ecbuild_add_option( FEATURE RETRIEVE_FESOM_DATA
                     DEFAULT OFF
                     DESCRIPTION "Retrieve all available atlas-fesom binary data during build step." )

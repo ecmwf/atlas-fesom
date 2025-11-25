@@ -31,6 +31,9 @@ ecbuild_add_library(
         util/FesomDataFile.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.cc
         version.h
+    PRIVATE_INCLUDES ${METIS_INCLUDE_DIRS}
+    PRIVATE_LIBS     ${METIS_LIBRARIES}
+    PRIVATE_DEFINITIONS ATLAS_FESOM_HAVE_METIS=${HAVE_METIS}
     PUBLIC_LIBS atlas
     PUBLIC_INCLUDES 
        $<INSTALL_INTERFACE:include/atlas-fesom>
