@@ -57,12 +57,70 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
     auto spec = grid::SpecRegistry::get( grid.name() );
 
     fesom::AtlasIOReader read(spec.getString( "data" ));
-    auto nb_cells = read.nb_cells();
+    auto read_nb_cells = read.nb_cells();
     std::vector<std::array<int64_t,3>> connectivity_cell2node;
     read.connectivity_cell2node(connectivity_cell2node);
-    ATLAS_ASSERT(connectivity_cell2node.size() == nb_cells);
+    ATLAS_ASSERT(connectivity_cell2node.size() == read_nb_cells);
 
-    mesh.nodes().resize(grid.size());
+    int mypart = mpi::rank();
+    // std::unordered_map<idx_t,std::vector<idx_t>> node_to_cell;
+    std::vector<idx_t> partition_cells(read_nb_cells);
+    std::vector<idx_t> partition_nodes(grid.size());
+    for (idx_t jcell=0; jcell < read_nb_cells; ++jcell) {
+        const auto& nodes = connectivity_cell2node[jcell];
+        for (const auto& node: nodes) {
+            if (distribution.partition(node) == mypart) {
+                partition_cells[jcell] = 1;
+                // node_to_cell[node].emplace_back(jcell);
+            }
+        }
+    }
+    for (idx_t jcell=0; jcell < read_nb_cells; ++jcell) {
+        if (not partition_cells[jcell]) {
+            continue;
+        }
+        const auto& nodes = connectivity_cell2node[jcell];
+        int p0 = distribution.partition(nodes[0]);
+        int p1 = distribution.partition(nodes[1]);
+        int p2 = distribution.partition(nodes[2]);
+
+        if (p0 != p1 && p1 != p2 && p2 != p0) {
+            // Arbitrarily choose p0
+            partition_cells[jcell] = (p0 == mypart);
+        }
+        else {
+            if (p0 == p1 || p0 == p2) {
+                partition_cells[jcell] = (p0 == mypart);
+            }
+            else if (p1 == p2) {
+                partition_cells[jcell] = (p1 == mypart);
+            }
+            else {
+                ATLAS_THROW_EXCEPTION("Should not be here");
+            }
+        }
+        if (p0 == mypart || partition_cells[jcell]) {
+            partition_nodes[nodes[0]] = 1;
+        }
+        if (p1 == mypart || partition_cells[jcell]) {
+            partition_nodes[nodes[1]] = 1;
+        }
+        if (p2 == mypart || partition_cells[jcell]) {
+            partition_nodes[nodes[2]] = 1;
+        }
+    }
+
+    idx_t nb_partition_cells = std::accumulate(partition_cells.begin(),partition_cells.end(),0);
+    ATLAS_DEBUG_VAR(nb_partition_cells);
+
+    idx_t nb_partition_nodes = std::accumulate(partition_nodes.begin(),partition_nodes.end(),0);
+    ATLAS_DEBUG_VAR(nb_partition_nodes);
+
+    std::vector<idx_t> local_node_numbering(grid.size(),-1);
+
+    idx_t nb_cells = nb_partition_cells;
+
+    mesh.nodes().resize(nb_partition_nodes);
     auto xy        = array::make_view<double, 2>(mesh.nodes().xy());
     auto lonlat    = array::make_view<double, 2>(mesh.nodes().lonlat());
     auto ghost     = array::make_view<int, 1>(mesh.nodes().ghost());
@@ -72,17 +130,21 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
     auto halo      = array::make_view<int, 1>(mesh.nodes().halo());
 
     auto unstructured = UnstructuredGrid(grid);
-    for (size_t i = 0; i < mesh.nodes().size(); ++i) {
-        PointLonLat p = unstructured.lonlat(i);
-        xy(i, size_t(XX)) = p.lon();
-        xy(i, size_t(YY)) = p.lat();
-        // Identity projection, therefore (lon,lat) = (x,y)
-        lonlat(i, size_t(LON)) = p.lon();
-        lonlat(i, size_t(LAT)) = p.lat();
-        ghost(i)               = 0;
-        gidx(i)                = i+1;
-        ridx(i)                = i;
-        partition(i)           = 0;
+    for (size_t iglb = 0, i = 0; iglb < unstructured.size(); ++iglb) {
+        if (partition_nodes[iglb]) {  
+            PointLonLat p = unstructured.lonlat(iglb);
+            xy(i, size_t(XX)) = p.lon();
+            xy(i, size_t(YY)) = p.lat();
+            // Identity projection, therefore (lon,lat) = (x,y)
+            lonlat(i, size_t(LON)) = p.lon();
+            lonlat(i, size_t(LAT)) = p.lat();
+            ghost(i)               = 0;
+            gidx(i)                = iglb+1;
+            ridx(i)                = i;
+            partition(i)           = mypart;
+            local_node_numbering[iglb] = i;
+            ++i;
+        }
     }
     halo.assign(0);
 
@@ -94,14 +156,17 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
 
     auto& triangles = node_connectivity.block(0);
     idx_t triangle[3];
-    for( size_t i = 0; i < nb_cells; ++i) {
-        cells_gidx(i) = i+1;
-        triangle[0] = connectivity_cell2node[i][0];
-        triangle[1] = connectivity_cell2node[i][1];
-        triangle[2] = connectivity_cell2node[i][2];
-        triangles.set(i,triangle);
+    for( size_t iglb = 0, i=0; iglb < read_nb_cells; ++iglb) {
+        if (partition_cells[iglb]) {
+            cells_gidx(i) = iglb+1;
+            triangle[0] = local_node_numbering[connectivity_cell2node[iglb][0]];
+            triangle[1] = local_node_numbering[connectivity_cell2node[iglb][1]];
+            triangle[2] = local_node_numbering[connectivity_cell2node[iglb][2]];
+            triangles.set(i,triangle);
+            ++i;
+        }
     }
-    cells_part.assign(0);
+    cells_part.assign(mypart);
 
 
     // Instead of computing, this could be part of the grid spec
