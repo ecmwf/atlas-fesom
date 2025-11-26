@@ -54,7 +54,7 @@ public:
     }
     Config partitioner() const override {
         switch (arrangement_) {
-            case Arrangement::N: return Unstructured::partitioner();
+            case Arrangement::N: return Config("type", "fesom");
             default: return Unstructured::partitioner();
         }
     }
