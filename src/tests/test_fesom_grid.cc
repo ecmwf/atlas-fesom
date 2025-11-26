@@ -30,8 +30,7 @@ CASE( "test fesom grid iterator" ) {
     };
 
     std::vector<Section> sections{
-        {"FESOM1", 126858},
-        //{"FESOM025_T", 1472282},
+        {"fesom-pi_N", 3140},
     };
     for ( auto& section : sections ) {
         std::string gridname = section.gridname;

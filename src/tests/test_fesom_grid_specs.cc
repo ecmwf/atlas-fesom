@@ -22,10 +22,11 @@ CASE( "test spec" ) {
     auto grid_name  = [&]( const std::string& uid_or_name ) {
         return grid::SpecRegistry::get( uid_or_name ).getString( "name" );
     };
-    auto nb_nodes = [&]( const std::string& uid_or_name ) {
-        int v;
-        grid::SpecRegistry::get( uid_or_name ).get( "nb_nodes", v );
-        return v;
+    auto grid_base_name  = [&]( const std::string& uid_or_name ) {
+        return grid::SpecRegistry::get( uid_or_name ).getString( "base_name" );
+    };
+    auto size = [&]( const std::string& uid_or_name ) {
+        return grid::SpecRegistry::get( uid_or_name ).getInt( "size" );
     };
     auto uid = [&]( const std::string& uid_or_name ) {
         return grid::SpecRegistry::get( uid_or_name ).getString( "uid" );
@@ -35,23 +36,28 @@ CASE( "test spec" ) {
     std::vector<std::string> uids;
     std::map<std::string, std::string> check_name;
 
-    std::vector<std::string> grids{"FESOM1"};
+    std::vector<std::string> grids{"fesom-pi", "CORE2", "tORCA025", "NG5", "DART"};
     for ( const auto& grid : grids ) {
-        std::string name = grid;
-        EXPECT( registered( name ) );
-        EXPECT( grid_name( name ) == grid );
-        EXPECT_NO_THROW( uid( name ) );
-        EXPECT_NO_THROW( nb_nodes( name ) );
-        Log::info() << std::setw( 11 ) << std::left << name << "    " << uid( name ) << "    " << nb_nodes( name )
-                    << std::endl;
-        uids.push_back( uid( name ) );
-        check_name[uids.back()] = name;
+        for (auto arrangement: {"N", "C"}) {
+            std::string name = grid+"_"+arrangement;
+            EXPECT( registered( name ) );
+            EXPECT_EQ( grid_name( name ), name );
+            EXPECT_NO_THROW( uid( name ) );
+            EXPECT_NO_THROW( size( name ) );
+            EXPECT_EQ( grid_base_name( name ), grid );
+            Log::info() << std::setw( 11 ) << std::left << name << "    " << std::setw( 11 ) << std::left << grid_base_name( name ) << "    " << uid( name ) << "    " << size( name )
+                        << std::endl;
+            uids.push_back( uid( name ) );
+            check_name[uids.back()] = name;
+        }
     }
 
     for ( const auto& grid : uids ) {
         EXPECT( registered( grid ) );
-        EXPECT( grid == uid( grid ) );
-        EXPECT( grid_name( grid ) == check_name[grid] );
+        EXPECT_EQ( grid, uid( grid ) );
+        EXPECT_EQ( grid_name( grid ), check_name[grid] );
+        Log::info() << grid << "    " << std::setw( 11 ) << std::left << grid_name( grid ) << "    " << size( grid )
+                    << std::endl;
     }
 }
 
