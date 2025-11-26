@@ -9,6 +9,7 @@ CORE2_N: &CORE2_N
     size: 126858
     uid: 1d03f0efefdc1a3a8798ad53ee983140
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/CORE2.atlas
+CORE2: *CORE2_N
 1d03f0efefdc1a3a8798ad53ee983140: *CORE2_N
 
 CORE2_C: &CORE2_C
@@ -29,6 +30,7 @@ NG5_N: &NG5_N
     size: 7402886
     uid: 7a33ecaebe22e7d5ca4abbd819a43240
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/NG5.atlas
+NG5: *NG5_N
 7a33ecaebe22e7d5ca4abbd819a43240: *NG5_N
 
 NG5_C: &NG5_C
@@ -50,6 +52,7 @@ tORCA025_N: &tORCA025_N
     size: 912469
     uid: e334b2912721077744d0764f6db12d76
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/tORCA025.atlas
+tORCA025: *tORCA025_N
 e334b2912721077744d0764f6db12d76: *tORCA025_N
 
 tORCA025_C: &tORCA025_C
@@ -70,6 +73,7 @@ DART_N: &DART_N
     size: 3160340
     uid: 35e958b1dfd9054bb86f283d75ccd7b4
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/DART.atlas
+DART: *DART_N
 35e958b1dfd9054bb86f283d75ccd7b4: *DART_N
 
 DART_C: &DART_C
@@ -91,6 +95,7 @@ fesom-pi_N: &fesom-pi_N
     size: 3140
     uid: bdc49d97a27e389fb86decd08a185c2f
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-pi.atlas
+fesom-pi: *fesom-pi_N
 bdc49d97a27e389fb86decd08a185c2f: *fesom-pi_N
 
 fesom-pi_C: &fesom-pi_C
@@ -112,6 +117,7 @@ fesom-soufflet_N: &fesom-soufflet_N
     size: 2875
     uid: d13c48fb4f2079896928152d0bebe1ba
     data: https://get.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-soufflet.atlas
+fesom-soufflet: *fesom-soufflet_N
 d13c48fb4f2079896928152d0bebe1ba: *fesom-soufflet_N
 
 fesom-soufflet_C: &fesom-soufflet_C
