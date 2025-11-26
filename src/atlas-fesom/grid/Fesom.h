@@ -34,44 +34,30 @@ namespace grid {
 class FesomNodes : public Unstructured {
 public:
 
-    FesomNodes(const std::string& name, const std::string& uid, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
-        Unstructured(N,lon,lat,lon_stride,lat_stride) {
-        name_ = name;
-        uid_ = uid;
+    FesomNodes(const std::string& uid, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
+        Unstructured(uid, N,lon,lat,lon_stride,lat_stride) {
     }
     static std::string static_type() { return "fesom"; }
-    std::string name() const override { return name_; }
     std::string type() const override { return static_type(); }
-    std::string uid() const override { return uid_; }
     Config meshgenerator() const override {
         return Config("type", "fesom");
 }
 
-private:
-    std::string name_;
-    std::string uid_;
 };
 
 
 class FesomCentroids : public Unstructured {
 public:
 
-    FesomCentroids(const std::string& name, const std::string& uid, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
-        Unstructured(N,lon,lat,lon_stride,lat_stride) {
-        name_ = name;
-        uid_ = uid;
+    FesomCentroids(const std::string& uid, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
+        Unstructured(uid, N,lon,lat,lon_stride,lat_stride) {
     }
     static std::string static_type() { return "fesom"; }
-    std::string name() const override { return name_; }
     std::string type() const override { return static_type(); }
-    std::string uid() const override { return uid_; }
     Config meshgenerator() const override {
         return Config("type", "delaunay");
-}
+    }
 
-private:
-    std::string name_;
-    std::string uid_;
 };
 
 

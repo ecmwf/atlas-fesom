@@ -15,7 +15,7 @@ find_package(ecbuild 3.4 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURR
 project(atlas-fesom LANGUAGES CXX)
 
 find_package(eckit 1.16.1 REQUIRED)
-find_package(atlas 0.34.0 REQUIRED)
+find_package(atlas 0.45.0 REQUIRED)
 
 if( NOT eckit_HAVE_LZ4 )
     ecbuild_warn( "eckit is required to have LZ4 support to decompress atlas-fesom binary data files. "

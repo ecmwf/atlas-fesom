@@ -77,7 +77,6 @@ public:
             return nullptr;
         }
 
-        std::string name = config.getString("name");
         std::string uid = config.getString("uid");
         std::string arrangement = config.getString("arrangement");
         
@@ -89,7 +88,7 @@ public:
         read.longitude(lon);
         read.latitude(lat);
         if (arrangement == "N") {
-            return new FesomNodes(name, uid, nb_nodes, lon.data(), lat.data());
+            return new FesomNodes(uid, nb_nodes, lon.data(), lat.data());
         }
         else if (arrangement == "C") {
             double cyclic_length = 360.;
@@ -114,7 +113,7 @@ public:
                 clat[j] = std::accumulate(triangle_lats.begin(),triangle_lats.end(),0.) / triangle_lats.size();
                 ++j;
             }
-            return new FesomCentroids(name, uid, nb_cells, clon.data(), clat.data());
+            return new FesomCentroids(uid, nb_cells, clon.data(), clat.data());
         }
         ATLAS_THROW_EXCEPTION("Unrecognised value for key 'arrangement': " << arrangement);
     }
