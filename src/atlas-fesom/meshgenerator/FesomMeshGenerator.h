@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "atlas/parallel/omp/omp.h"
 #include "atlas/meshgenerator/MeshGenerator.h"
 #include "atlas/meshgenerator/detail/MeshGeneratorImpl.h"
 #include "atlas/util/Config.h"
@@ -39,11 +40,10 @@ namespace meshgenerator {
 
 class FesomMeshGenerator : public MeshGenerator::Implementation {
 public:
-    FesomMeshGenerator( const eckit::Parametrisation& = util::NoConfig() ) {}
+    FesomMeshGenerator( const eckit::Parametrisation& = util::NoConfig() );
 
     using MeshGenerator::Implementation::generate;
 
-    void generate( const Grid&, const grid::Partitioner&, Mesh& ) const override;
     void generate( const Grid&, const grid::Distribution&, Mesh& ) const override;
     void generate( const Grid&, Mesh& ) const override;
 
@@ -52,6 +52,10 @@ public:
 
 private:
     void hash( eckit::Hash& ) const override;
+
+    std::string mpi_comm_;
+    int part_;
+    int nb_parts_;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
