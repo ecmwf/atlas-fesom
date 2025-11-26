@@ -30,8 +30,9 @@ namespace fesom {
 
 class AtlasIOReader {
 public:
-    AtlasIOReader( const std::string& uri ) :
-        reader_(FesomDataFile(uri)){
+    AtlasIOReader( const std::string& uri, const std::string& mpi_comm = "" ) :
+        input_{atlas::io::InputFileStream(FesomDataFile(uri, mpi_comm))},
+        reader_{input_} {
         reader_.read( "version", version_ ).wait();
     }
 
@@ -69,7 +70,8 @@ public:
         reader_.read("connectivity_cell2node",value).wait();
     }
 
-private:
+public:
+    atlas::io::InputFileStream input_;
     io::RecordReader reader_;
     int version_;
 };

@@ -57,24 +57,24 @@ static std::vector<std::string> search_paths() {
 
 class FesomDataFile {
 public:
-    FesomDataFile( const std::string& uri, const std::string& checksum = "" ) {
+    FesomDataFile( const std::string& uri, const std::string& mpi_comm = "" ) {
+        auto& comm = mpi_comm.empty() ? mpi::comm() : mpi::comm(mpi_comm);
         uri_      = eckit::URI( uri );
-        checksum_ = checksum;
         auto file_search = FileSearch{search_paths(),known_urls()};
         if ( uri_.scheme().find( "http" ) == 0 ) {
             std::string url = uri_.asRawString();
 
             Log::debug() << "Looking for " << file_search.file(url) << " in " << file_search.searchPath() << std::endl;
             int found = 0;
-            if ( mpi::comm().rank() == 0 ) {
+            if ( comm.rank() == 0 ) {
                 found = file_search( url, path_ );
             }
-            mpi::comm().broadcast(found,0);
+            comm.broadcast(found,0);
             if( not found ) {
                 Log::debug() << "File " << uri << " has not been found in " << file_search.searchPath() << std::endl;
             }
             if( found ) {
-                if( mpi::comm().rank() != 0 ) {
+                if( comm.rank() != 0 ) {
                     // Find path also on non-zero ranks
                     ATLAS_ASSERT( file_search( url, path_ ) );
                 }
@@ -85,7 +85,7 @@ public:
 
                 Log::debug() << "Caching enabled. Downloading " << uri << " to " << path_ << std::endl;
 
-                if ( mpi::comm().rank() == 0 ) {
+                if ( comm.rank() == 0 ) {
                    if ( download( url, path_ ) == 0 ) {
                         std::stringstream errmsg;
                         errmsg << "Could not download file from url " << url;
@@ -95,7 +95,7 @@ public:
                         ATLAS_THROW_EXCEPTION( "Could not locate fesom grid data file " << path_ );
                     }
                 }
-                mpi::comm().barrier();
+                comm.barrier();
             }
             else {
                 ATLAS_THROW_EXCEPTION( "Could not locate fesom grid data file " << file_search.file(url) << " in " << file_search.searchPath() );
@@ -127,7 +127,6 @@ public:
 private:
     eckit::URI uri_;
     eckit::PathName path_;
-    std::string checksum_;
 };
 
 }  // namespace fesom
