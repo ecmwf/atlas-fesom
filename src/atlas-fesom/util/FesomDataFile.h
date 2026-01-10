@@ -33,8 +33,8 @@ namespace fesom {
 
 static std::vector<std::string> known_urls() {
     std::vector<std::string> urls;
-    urls.emplace_back("http://get.ecmwf.int/repository/atlas/grids/fesom");
-    urls.emplace_back("https://get.ecmwf.int/repository/atlas/grids/fesom");
+    urls.emplace_back("http://sites.ecmwf.int/repository/atlas/grids/fesom");
+    urls.emplace_back("https://sites.ecmwf.int/repository/atlas/grids/fesom");
     return urls;
 }
 

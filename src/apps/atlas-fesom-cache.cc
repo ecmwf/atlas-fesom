@@ -77,7 +77,8 @@ int Tool::execute( const Args& args ) {
         }
     }
     ComputeCachedPath compute_cached_path(
-        {"https://get.ecmwf.int/repository/atlas/grids/fesom", "http://get.ecmwf.int/repository/atlas/grids/fesom"} );
+        {"https://sites.ecmwf.int/repository/atlas/grids/fesom",
+          "http://sites.ecmwf.int/repository/atlas/grids/fesom"} );
 
     std::vector<std::string> failed_urls;
     for ( auto& url : urls ) {
