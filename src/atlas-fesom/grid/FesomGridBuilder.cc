@@ -10,6 +10,7 @@
 
 #include "Fesom.h"
 
+#include <cctype>    // ::toupper
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -36,16 +37,16 @@ static class FesomGridBuilder : public GridBuilder {
     using Config         = Grid::Config;
 
 public:
-    FesomGridBuilder() : GridBuilder( FesomNodes::static_type() ) {}
+    FesomGridBuilder() : GridBuilder( "fesom" ) {}
 
     const std::string& type() const override {
-        static std::string _type{"unstructured"};
+        static std::string _type{"fesom"};
         return _type;
     }
 
     void print( std::ostream& os ) const override {
-        os << std::left << std::setw( 30 ) << "FESOM<N>"
-           << "FESOM unstructured ocean grid. Possible increasing resolutions <deg>: 2,1,025,12";
+        os << std::left << std::setw( 30 ) << "fesom"
+           << "FESOM unstructured ocean grid";
     }
 
     const Implementation* create( const std::string& name_or_uid, const Config& /* config */ ) const override {
@@ -73,7 +74,8 @@ public:
     const Implementation* create( const Config& config ) const override {
         std::string type;
         config.get("type",type);
-        if (type != "FESOM") {
+        std::transform( type.begin(), type.end(), type.begin(), ::tolower );
+        if (type != "fesom") {
             return nullptr;
         }
 
@@ -88,7 +90,7 @@ public:
         read.longitude(lon);
         read.latitude(lat);
         if (arrangement == "N") {
-            return new FesomNodes(uid, nb_nodes, lon.data(), lat.data());
+            return new Fesom(uid, Fesom::Arrangement::N, nb_nodes, lon.data(), lat.data());
         }
         else if (arrangement == "C") {
             double cyclic_length = 360.;
@@ -113,7 +115,7 @@ public:
                 clat[j] = std::accumulate(triangle_lats.begin(),triangle_lats.end(),0.) / triangle_lats.size();
                 ++j;
             }
-            return new FesomCentroids(uid, nb_cells, clon.data(), clat.data());
+            return new Fesom(uid, Fesom::Arrangement::C, nb_cells, clon.data(), clat.data());
         }
         ATLAS_THROW_EXCEPTION("Unrecognised value for key 'arrangement': " << arrangement);
     }

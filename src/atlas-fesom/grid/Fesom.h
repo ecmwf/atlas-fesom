@@ -31,33 +31,39 @@ namespace grid {
 namespace detail {
 namespace grid {
 
-class FesomNodes : public Unstructured {
+class Fesom : public Unstructured {
 public:
 
-    FesomNodes(const std::string& uid, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
+    enum class Arrangement {
+        N,
+        C
+    };
+
+    Fesom(const std::string& uid, Arrangement arrangement, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
         Unstructured(uid, N,lon,lat,lon_stride,lat_stride) {
+        arrangement_ = arrangement;
     }
     static std::string static_type() { return "fesom"; }
     std::string type() const override { return static_type(); }
+
     Config meshgenerator() const override {
-        return Config("type", "fesom");
-}
-
-};
-
-
-class FesomCentroids : public Unstructured {
-public:
-
-    FesomCentroids(const std::string& uid, size_t N, double lon[], double lat[], size_t lon_stride = 1, size_t lat_stride = 1) :
-        Unstructured(uid, N,lon,lat,lon_stride,lat_stride) {
+        switch (arrangement_) {
+            case Arrangement::N: return Config("type", "fesom");
+            default: return Unstructured::meshgenerator();
+        }
     }
-    static std::string static_type() { return "fesom"; }
-    std::string type() const override { return static_type(); }
-    Config meshgenerator() const override {
-        return Config("type", "delaunay");
+    Config partitioner() const override {
+        switch (arrangement_) {
+            case Arrangement::N: return Unstructured::partitioner();
+            default: return Unstructured::partitioner();
+        }
+    }
+    Arrangement arrangement() const {
+        return arrangement_;
     }
 
+private:
+    Arrangement arrangement_;
 };
 
 
