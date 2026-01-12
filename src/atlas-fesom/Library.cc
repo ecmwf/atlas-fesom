@@ -8,6 +8,8 @@
  * nor does it submit to any jurisdiction.
  */
 
+#include <algorithm> // std::transform
+#include <cctype>    // ::tolower
 #include <string>
 
 #include "eckit/config/Resource.h"
@@ -56,8 +58,15 @@ void Library::init() {
     auto grids = util::Config( gridsPath() );
     for ( auto& id : grids.keys() ) {
         auto spec = grids.getSubConfiguration(id);
-        if (spec.getString("type","") == "FESOM") {
+        std::string type = spec.getString("type","");
+        std::transform( type.begin(), type.end(), type.begin(), ::tolower );
+        if (type == "fesom") {
             Log::debug() << "Plugin atlas-fesom registering grid " << id << std::endl;
+            if(!spec.has("name")) {
+                ATLAS_ASSERT(spec.has("base_name"));
+                ATLAS_ASSERT(spec.has("arrangement"));
+                spec.set("name", spec.getString("base_name")+"_"+spec.getString("arrangement"));
+            }
             grid::SpecRegistry::add(id, spec);
             if (id != spec.getString("uid")) {
                 grid::GridBuilder& grid_builder = *grid::GridBuilder::typeRegistry().at("fesom");

@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <cctype>
 #include <algorithm>
 #include <chrono>
 #include <exception>

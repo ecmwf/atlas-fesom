@@ -79,7 +79,7 @@ public:
 
         std::string name = config.getString("name");
         std::string uid = config.getString("uid");
-        std::string functionspace = config.getString("functionspace");
+        std::string arrangement = config.getString("arrangement");
         
         fesom::AtlasIOReader read(fesom::FesomDataFile(config.getString("data")));
         std::vector<double> lon;
@@ -88,10 +88,10 @@ public:
         read.nb_nodes(nb_nodes);
         read.longitude(lon);
         read.latitude(lat);
-        if (functionspace == "nodes") {
+        if (arrangement == "N") {
             return new FesomNodes(name, uid, nb_nodes, lon.data(), lat.data());
         }
-        else if (functionspace == "cells") {
+        else if (arrangement == "C") {
             double cyclic_length = 360.;
             std::size_t nb_cells{0};
             std::vector<std::array<std::int64_t,3>> triangles;
@@ -116,7 +116,7 @@ public:
             }
             return new FesomCentroids(name, uid, nb_cells, clon.data(), clat.data());
         }
-        ATLAS_THROW_EXCEPTION("Unrecognised value for key 'functionspace': " << functionspace);
+        ATLAS_THROW_EXCEPTION("Unrecognised value for key 'arrangement': " << arrangement);
     }
 
     void force_link() {}

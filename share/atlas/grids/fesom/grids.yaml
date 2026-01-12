@@ -3,9 +3,10 @@
 ### CORE2 (Coordinated Ocean-ice Reference Experiments v2)
 
 CORE2_N: &CORE2_N
+    description: "Coordinated Ocean-ice Reference Experiments v2"
     type: FESOM
-    name: CORE2_N
-    functionspace: nodes
+    base_name: CORE2
+    arrangement: N
     size: 126858
     uid: 1d03f0efefdc1a3a8798ad53ee983140
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/CORE2.atlas
@@ -14,8 +15,9 @@ CORE2: *CORE2_N
 
 CORE2_C: &CORE2_C
     type: FESOM
-    name: CORE2_C
-    functionspace: cells
+    description: "Coordinated Ocean-ice Reference Experiments v2"
+    base_name: CORE2
+    arrangement: C
     size: 244659
     uid: 9930995170a9d054187b13962a648880
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/CORE2.atlas
@@ -24,9 +26,10 @@ CORE2_C: &CORE2_C
 # ### NG5 (NextGEMS 5km)
 
 NG5_N: &NG5_N
+    description: "NextGEMS 5km"
     type: FESOM
-    name: NG5_N
-    functionspace: nodes
+    base_name: NG5
+    arrangement: N
     size: 7402886
     uid: 7a33ecaebe22e7d5ca4abbd819a43240
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/NG5.atlas
@@ -34,9 +37,10 @@ NG5: *NG5_N
 7a33ecaebe22e7d5ca4abbd819a43240: *NG5_N
 
 NG5_C: &NG5_C
+    description: "NextGEMS 5km"
     type: FESOM
-    name: NG5_C
-    functionspace: cells
+    base_name: NG5
+    arrangement: C
     size: 14741520
     uid: 9b6c413e35230d72a4ab69242d0d0617
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/NG5.atlas
@@ -46,9 +50,10 @@ NG5_C: &NG5_C
 # ### tORCA025 ( from /ec/res4/hpcperm/natr/RAPS/20/inputs/fesom/v21/fesom_orca025/2020012000/NEMO_ecmwf )
 
 tORCA025_N: &tORCA025_N
+    description: "Triangulated ORCA025 grid"
     type: FESOM
-    name: tORCA025_N
-    functionspace: nodes
+    base_name: tORCA025
+    arrangement: N
     size: 912469
     uid: e334b2912721077744d0764f6db12d76
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/tORCA025.atlas
@@ -56,9 +61,10 @@ tORCA025: *tORCA025_N
 e334b2912721077744d0764f6db12d76: *tORCA025_N
 
 tORCA025_C: &tORCA025_C
+    description: "Triangulated ORCA025 grid"
     type: FESOM
-    name: tORCA025_C
-    functionspace: cells
+    base_name: tORCA025
+    arrangement: C
     size: 1801435
     uid: 5d6a95991201163fab7964e4ad04ed34
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/tORCA025.atlas
@@ -67,9 +73,10 @@ tORCA025_C: &tORCA025_C
 # ### DART ( from /perm/ecm4053/FESOM-grids/DART )
 
 DART_N: &DART_N
+    description: "missing"
     type: FESOM
-    name: DART_N
-    functionspace: nodes
+    base_name: DART
+    arrangement: N
     size: 3160340
     uid: 35e958b1dfd9054bb86f283d75ccd7b4
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/DART.atlas
@@ -77,9 +84,10 @@ DART: *DART_N
 35e958b1dfd9054bb86f283d75ccd7b4: *DART_N
 
 DART_C: &DART_C
+    description: "missing"
     type: FESOM
-    name: DART_C
-    functionspace: cells
+    base_name: DART
+    arrangement: C
     size: 6262485
     uid: de015703cf0c3b339a9f0f6ec080e4f6
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/DART.atlas
@@ -89,9 +97,10 @@ de015703cf0c3b339a9f0f6ec080e4f6: *DART_C
 # ### fesom-pi
 
 fesom-pi_N: &fesom-pi_N
+    description: "Very coarse resolution fesom grid with 3140 nodes (1000*pi)"
     type: FESOM
-    name: fesom-pi_N
-    functionspace: nodes
+    base_name: fesom-pi
+    arrangement: N
     size: 3140
     uid: bdc49d97a27e389fb86decd08a185c2f
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-pi.atlas
@@ -99,9 +108,10 @@ fesom-pi: *fesom-pi_N
 bdc49d97a27e389fb86decd08a185c2f: *fesom-pi_N
 
 fesom-pi_C: &fesom-pi_C
+    description: "Very coarse resolution fesom grid with 3140 nodes (1000*pi)"
     type: FESOM
-    name: fesom-pi_C
-    functionspace: cells
+    base_name: fesom-pi
+    arrangement: C
     size: 5839
     uid: e548b74fa53eef5ab412c6061330f043
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-pi.atlas
@@ -112,8 +122,8 @@ e548b74fa53eef5ab412c6061330f043: *fesom-pi_C
 
 fesom-soufflet_N: &fesom-soufflet_N
     type: FESOM
-    name: fesom-soufflet_N
-    functionspace: nodes
+    base_name: fesom-soufflet
+    arrangement: N
     size: 2875
     uid: d13c48fb4f2079896928152d0bebe1ba
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-soufflet.atlas
@@ -122,8 +132,8 @@ d13c48fb4f2079896928152d0bebe1ba: *fesom-soufflet_N
 
 fesom-soufflet_C: &fesom-soufflet_C
     type: FESOM
-    name: fesom-soufflet_C
-    functionspace: cells
+    base_name: fesom-soufflet
+    arrangement: C
     size: 5700
     uid: ef71df573948057d9ea4a08f0e960ea7
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-soufflet.atlas
