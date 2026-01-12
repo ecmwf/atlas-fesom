@@ -10,6 +10,8 @@ CORE2_N: &CORE2_N
     size: 126858
     uid: 1d03f0efefdc1a3a8798ad53ee983140
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/CORE2.atlas
+    edge_length_in_degrees_min: 0.106939715387762
+    edge_length_in_degrees_max: 1.63655110252207
 CORE2: *CORE2_N
 1d03f0efefdc1a3a8798ad53ee983140: *CORE2_N
 
@@ -33,6 +35,8 @@ NG5_N: &NG5_N
     size: 7402886
     uid: 7a33ecaebe22e7d5ca4abbd819a43240
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/NG5.atlas
+    edge_length_in_degrees_min: 0.0328945174143447
+    edge_length_in_degrees_max: 0.174853979680148
 NG5: *NG5_N
 7a33ecaebe22e7d5ca4abbd819a43240: *NG5_N
 
@@ -57,6 +61,8 @@ tORCA025_N: &tORCA025_N
     size: 912469
     uid: e334b2912721077744d0764f6db12d76
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/tORCA025.atlas
+    edge_length_in_degrees_min: 0.0287980954898608
+    edge_length_in_degrees_max: 0.353553250360742
 tORCA025: *tORCA025_N
 e334b2912721077744d0764f6db12d76: *tORCA025_N
 
@@ -80,6 +86,8 @@ DART_N: &DART_N
     size: 3160340
     uid: 35e958b1dfd9054bb86f283d75ccd7b4
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/DART.atlas
+    edge_length_in_degrees_min: 0.010015678484521
+    edge_length_in_degrees_max: 0.29855701474113
 DART: *DART_N
 35e958b1dfd9054bb86f283d75ccd7b4: *DART_N
 
@@ -104,6 +112,8 @@ fesom-pi_N: &fesom-pi_N
     size: 3140
     uid: bdc49d97a27e389fb86decd08a185c2f
     data: https://sites.ecmwf.int/repository/atlas/grids/fesom/v0/fesom-pi.atlas
+    edge_length_in_degrees_min: 0.308320106674736
+    edge_length_in_degrees_max: 11.0339964999694
 fesom-pi: *fesom-pi_N
 bdc49d97a27e389fb86decd08a185c2f: *fesom-pi_N
 

@@ -178,36 +178,102 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
         cells_part.assign(part_);
     }
 
-    ATLAS_TRACE_SCOPE("Compute cell_{maximum,mininum}_diagonal_on_unit_sphere") {
-        // Instead of computing, this could be part of the grid spec
+    if (grid.spec().has("edge_length_in_degrees_min") && grid.spec().has("edge_length_in_degrees_max")) {
+        const double s_min = grid.spec().getDouble("edge_length_in_degrees_min");
+        const double s_max = grid.spec().getDouble("edge_length_in_degrees_max");
+        PointLonLat eq0_ll {0,0};
+        PointLonLat eq_min_ll {s_min,0};
+        PointLonLat eq_max_ll {s_max,0};
         atlas::Geometry geometry("UnitSphere");
-        double d2_max{0};
-        double d2_min{geometry.radius()};
-        auto lonlat    = array::make_view<double, 2>(mesh.nodes().lonlat());
-        atlas::mesh::HybridElements::Connectivity& node_connectivity = mesh.cells().node_connectivity();
-        auto& triangles = node_connectivity.block(0);
-        for( size_t i=0; i<mesh.cells().size(); ++i) {
-            auto p0_ll = PointLonLat{ lonlat(triangles(i,0),LON), lonlat(triangles(i,0),LAT) };
-            auto p1_ll = PointLonLat{ lonlat(triangles(i,1),LON), lonlat(triangles(i,1),LAT) };
-            auto p2_ll = PointLonLat{ lonlat(triangles(i,2),LON), lonlat(triangles(i,2),LAT) };
-            PointXYZ p0 = geometry.xyz( p0_ll );
-            PointXYZ p1 = geometry.xyz( p1_ll );
-            PointXYZ p2 = geometry.xyz( p2_ll );
-            auto update_d2_min_max = [&](const PointXYZ& x, const PointXYZ& y) {
-                double d2 = PointXYZ::distance2(x,y);
-                d2_max = std::max(d2_max, d2);
-                d2_min = std::min(d2_min, d2);
-            };
-            update_d2_min_max(p0, p1);
-            update_d2_min_max(p0, p2);
-            update_d2_min_max(p1, p2);
-        }
-        double d_min = std::sqrt(d2_min);
-        double d_max = std::sqrt(d2_max);
-        comm.allReduceInPlace(d_min,eckit::mpi::min());
-        comm.allReduceInPlace(d_max,eckit::mpi::max());
-        mesh.metadata().set("cell_maximum_diagonal_on_unit_sphere",d_max);
+        PointXYZ eq0 = geometry.xyz(eq0_ll);
+        PointXYZ eq_min = geometry.xyz(eq_min_ll);
+        PointXYZ eq_max = geometry.xyz(eq_max_ll);
+        const double d_min = PointXYZ::distance(eq0, eq_min);
+        const double d_max = PointXYZ::distance(eq0, eq_max);
         mesh.metadata().set("cell_minimum_diagonal_on_unit_sphere",d_min);
+        mesh.metadata().set("cell_maximum_diagonal_on_unit_sphere",d_max);
+        // ATLAS_DEBUG("from file");
+        // Log::info() << std::setprecision(12);
+        // ATLAS_DEBUG_VAR(d_min);
+        // ATLAS_DEBUG_VAR(d_max);
+    }
+    else {
+        ATLAS_TRACE_SCOPE("Compute cell_{maximum,mininum}_diagonal_on_unit_sphere") {
+            // ATLAS_DEBUG("Computing min max");
+            // Instead of computing, this could be part of the grid spec
+            atlas::Geometry geometry("UnitSphere");
+            double d2_max{0};
+            double d2_min{geometry.radius()};
+
+#define COMPUTE_EDGE_LENTH 1
+// COMPUTE_EDGE_LENTH definition allows to compute the edge_length_in_degrees_{min,max} which can be added to the grid spec in the yaml file
+// Really this code should belong in a standalone executable that computes it
+#if COMPUTE_EDGE_LENTH
+            double s_max{0};
+            double s_min{2.*M_PI};
+#endif
+            auto lonlat    = array::make_view<double, 2>(mesh.nodes().lonlat());
+            atlas::mesh::HybridElements::Connectivity& node_connectivity = mesh.cells().node_connectivity();
+            auto& triangles = node_connectivity.block(0);
+            for( size_t i=0; i<mesh.cells().size(); ++i) {
+                auto p0_ll = PointLonLat{ lonlat(triangles(i,0),LON), lonlat(triangles(i,0),LAT) };
+                auto p1_ll = PointLonLat{ lonlat(triangles(i,1),LON), lonlat(triangles(i,1),LAT) };
+                auto p2_ll = PointLonLat{ lonlat(triangles(i,2),LON), lonlat(triangles(i,2),LAT) };
+#if COMPUTE_EDGE_LENTH
+                auto update_s_min_max = [&](const PointLonLat& x, const PointLonLat& y) {
+                    constexpr double deg_to_rad = M_PI / 180.;
+                    double lon1 = x.lon() * deg_to_rad;
+                    double lat1 = x.lat() * deg_to_rad;
+                    double lon2 = y.lon() * deg_to_rad;
+                    double lat2 = y.lat() * deg_to_rad;
+                    double dlon = lon2 - lon1;
+                    double dlat = lat2 - lat1;
+                    auto sqr = [](double v) { return v*v; };
+                    double a = sqr(std::sin(dlat*0.5)) + std::cos(lat1) * std::cos(lat2) * sqr(std::sin(dlon*0.5));
+                    double s = 2. * std::atan2(std::sqrt(a), std::sqrt(1.-a));
+                    s_max = std::max(s_max, s);
+                    s_min = std::min(s_min, s);
+                };
+                update_s_min_max(p0_ll, p1_ll);
+                update_s_min_max(p0_ll, p2_ll);
+                update_s_min_max(p1_ll, p2_ll);
+#endif
+                PointXYZ p0 = geometry.xyz( p0_ll );
+                PointXYZ p1 = geometry.xyz( p1_ll );
+                PointXYZ p2 = geometry.xyz( p2_ll );
+                auto update_d2_min_max = [&](const PointXYZ& x, const PointXYZ& y) {
+                    double d2 = PointXYZ::distance2(x,y);
+                    d2_max = std::max(d2_max, d2);
+                    d2_min = std::min(d2_min, d2);
+                };
+                update_d2_min_max(p0, p1);
+                update_d2_min_max(p0, p2);
+                update_d2_min_max(p1, p2);
+            }
+            double d_min = std::sqrt(d2_min);
+            double d_max = std::sqrt(d2_max);
+            comm.allReduceInPlace(d_min,eckit::mpi::min());
+            comm.allReduceInPlace(d_max,eckit::mpi::max());
+            mesh.metadata().set("cell_minimum_diagonal_on_unit_sphere",d_min);
+            mesh.metadata().set("cell_maximum_diagonal_on_unit_sphere",d_max);
+#if COMPUTE_EDGE_LENTH
+            Log::info() << std::setprecision(15);
+            ATLAS_DEBUG_VAR(d_min);
+            ATLAS_DEBUG_VAR(d_max);
+            s_min *= 180./M_PI; // to degrees
+            s_max *= 180./M_PI; // to degrees
+            ATLAS_DEBUG_VAR(s_min);
+            ATLAS_DEBUG_VAR(s_max);
+            PointLonLat eq0_ll {0,0};
+            PointLonLat eq_min_ll {s_min,0};
+            PointLonLat eq_max_ll {s_max,0};
+            PointXYZ eq0 = geometry.xyz(eq0_ll);
+            PointXYZ eq_min = geometry.xyz(eq_min_ll);
+            PointXYZ eq_max = geometry.xyz(eq_max_ll);
+            ATLAS_DEBUG_VAR(PointXYZ::distance(eq0, eq_min));
+            ATLAS_DEBUG_VAR(PointXYZ::distance(eq0, eq_max));
+#endif
+        }
     }
 }
 
