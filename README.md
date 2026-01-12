@@ -9,7 +9,8 @@ reading binary data files that store the coordinates for these grids.
 
 Requirements:
 -------------
-- atlas 0.25.0 or greater
+- atlas 0.45.0 or greater
+- metis 5.0 or greater
 
 
 
@@ -46,11 +47,11 @@ Examples are Grid registration and MeshGenerator
 
 Verify the plugin works:
 
-    atlas-grids FESOM1_T --info
+    atlas-grids CORE2 --info
 
 To generate a atlas-fesom mesh:
 
-    atlas-meshgen FESOM1_T --3d -o mesh.msh
+    atlas-meshgen CORE2 --coordinates=xyz -o mesh.msh
 
 The above commands will require availability of atlas-fesom data files. The location of atlas data files is by default:
  - For build-dirs: `<build-dir>/share`
