@@ -37,7 +37,7 @@ public:
 
     size_t write( const eckit::PathName& path, const util::Config& config );
 
-    std::string computeUid( const util::Config& config = util::NoConfig());
+    std::string computeUid(std::string arrangement);
 
     void ensureOutwardNormals();
 

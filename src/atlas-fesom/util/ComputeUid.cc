@@ -23,7 +23,7 @@
 namespace atlas {
 namespace fesom {
 
-std::string compute_uid( const double lon[], const double lat[], size_t size ) {
+std::string compute_nodes_uid( const double lon[], const double lat[], size_t size ) {
     ATLAS_TRACE();
 
     eckit::MD5 hasher;
@@ -46,6 +46,23 @@ std::string compute_uid( const double lon[], const double lat[], size_t size ) {
     }
     return hasher.digest();
 }
+
+std::string compute_centroids_uid(const double lon[], const double lat[], size_t lonlat_size, const std::int64_t connectivity[], size_t connectivity_size) {
+    ATLAS_TRACE();
+
+    eckit::MD5 hasher;
+
+    if ( eckit_LITTLE_ENDIAN ) {
+        hasher.add( lat, lonlat_size * sizeof( double ) );
+        hasher.add( lon, lonlat_size * sizeof( double ) );
+        hasher.add( connectivity, connectivity_size * sizeof( std::int64_t ) );
+    }
+    else {
+        throw_NotImplemented("Big-endian not implemented for FESOM centroids uid computation", Here());
+    }
+    return hasher.digest();
+}
+
 
 }  // namespace fesom
 }  // namespace atlas

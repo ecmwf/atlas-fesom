@@ -17,6 +17,7 @@
 
 
 #include "eckit/filesystem/PathName.h"
+#include "eckit/filesystem/LocalPathName.h"
 #include "eckit/log/Bytes.h"
 
 #include "atlas/runtime/AtlasTool.h"
@@ -27,22 +28,21 @@
 #include "AtlasIOReader.h"
 #include "AsciiReader.h"
 
-namespace atlas {
-namespace fesom {
+namespace atlas::fesom {
 
 //----------------------------------------------------------------------------------------------------------------------
 
 struct Tool : public atlas::AtlasTool {
     bool serial() override { return true; }
     int execute( const Args& args ) override;
-    std::string briefDescription() override { return "Create binary grid data files "; }
+    std::string briefDescription() override { return "Create atlas-fesom grid data files "; }
     std::string usage() override {
-        return name() + " <file> --name=NAME [OPTION]... [--help,-h]";
+        return name() + " <file-or-dir> --name=NAME [OPTION]... [--help,-h]";
     }
     std::string longDescription() override {
         return "Create binary grid data files \n"
                "\n"
-               "       <file>: input file";
+               "       <file-or-dir>: input file";
     }
 
     Tool( int argc, char** argv ) : AtlasTool( argc, argv ) {
@@ -51,16 +51,28 @@ struct Tool : public atlas::AtlasTool {
                                                    "netcdf, atlas-io, ascii" ) );
         add_option( new SimpleOption<std::string>( "compression",
                                                    "Data compression: none, lz4, aec, ... (see eckit support)'" ) );
-        add_option(
-            new SimpleOption<std::string>( "output", "Output file path; default: <name>_<arrangement>.atlas" ) );
+        add_option( new SimpleOption<std::string>( "output.data",  "Output data file; default: <name>.atlas" ) );
+        add_option( new SimpleOption<std::string>( "output.grids", "Output grid-spec file; default: grids.yaml" ) );
         add_option( new Separator( "Advanced" ) );
         add_option( new SimpleOption<bool>( "verbose", "Print verbose output" ) );
-        add_option( new SimpleOption<bool>( "yaml", "Output spec instead of data" ) );
+        add_option( new SimpleOption<bool>( "skip-uid", "Skip computation of uid") );
     }
 };
 
 //------------------------------------------------------------------------------------------------------
 
+auto is_absolute_path = [] (std::string path) -> bool {
+    return path[0] == '/' || path[0] == '~';
+};
+
+auto make_absolute_path = [] (std::string reference_path, std::string path) -> std::string {
+    eckit::PathName ref_path{reference_path};
+    eckit::PathName absolute_path{path};
+    if (reference_path.size() && not is_absolute_path(path)) {
+        absolute_path = reference_path / absolute_path;
+    }
+    return absolute_path.fullName().asString();
+};
 
 int Tool::execute( const Args& args ) {
     std::string input_format;
@@ -95,11 +107,12 @@ int Tool::execute( const Args& args ) {
         }
     }
 
-    bool yaml_output = args.getBool( "yaml", false );
     bool verbose = args.getBool("verbose", false);
 
-    std::string name       = args.getString( "name", "unnamed" );
-    std::string outputfile = args.getString( "output", name + ".atlas" );
+    eckit::PathName cwd = eckit::LocalPathName::cwd();
+
+    std::string name       = args.getString( "name", "fesom" );
+    std::string outputfile = args.getString( "output.data", name + ".atlas" );
 
     args.get("input-format", input_format);
     if ( input_format.empty() ) {
@@ -122,10 +135,6 @@ int Tool::execute( const Args& args ) {
         }
     }
 
-    if ( yaml_output ) {
-        Log::info().reset();
-    }
-
     FesomData data;
 
     if ( input_format.find( "netcdf" ) == 0 ) {
@@ -146,37 +155,69 @@ int Tool::execute( const Args& args ) {
         return failed();
     }
 
-    std::string uid = data.computeUid( args );
-
-    if ( not yaml_output ) {
-        Log::info() << "nb_nodes       : " << data.nb_nodes << std::endl;
-        Log::info() << "nb_cells       : " << data.nb_cells << std::endl;
-        Log::info() << "uid            : " << uid << std::endl;
+    std::string uid_N = name + "_N";
+    std::string uid_C = name + "_C";
+    bool skip_uid = args.getBool("skip-uid", false);
+    if ( not skip_uid ) {
+        uid_N = data.computeUid( "N" );
+        uid_C = data.computeUid( "C" );
     }
 
-    if ( not yaml_output ) {
+    {
         ATLAS_TRACE( "Write data file" );
-        auto length = data.write( outputfile, args );
-        Log::info() << "Written " << eckit::Bytes( length ) << " to file " << outputfile << std::endl;
+        std::string outputfile_fullpath = make_absolute_path( cwd, outputfile );
+        auto length = data.write( outputfile_fullpath, args );
+        Log::info() << "Written " << eckit::Bytes( length ) << " to file " << outputfile_fullpath << std::endl;
     }
 
-    if ( yaml_output ) {
-        std::ostream& out = std::cout;
-        out << name << ": &" << name << std::endl;
-        out << "    type: FESOM" << std::endl;
-        out << "    name: " << name << std::endl;
-        out << "    nb_nodes: " << data.nb_nodes << std::endl;
-        out << "    nb_cells: " << data.nb_cells << std::endl;
-        out << "    uid: " << uid << std::endl;
-        out << "    data: {{location}}/" << outputfile << std::endl;
-        out << uid << ": *" << name << std::endl;
+
+    {
+        ATLAS_TRACE( "Write gridspec file" );
+        std::stringstream out;
+        std::string name_N = name + "_N";
+        std::string name_C = name + "_C";
+
+        out << name_N << ": &" << name_N << '\n';
+        out << "    type: FESOM\n";
+        out << "    name: " << name_N << '\n';
+        out << "    base_name: " << name << '\n';
+        out << "    arrangement: N\n";
+        out << "    size: " << data.nb_nodes << '\n';
+        if (not skip_uid) {
+            out << "    uid: " << uid_N << '\n';
+        }
+        out << "    data: file://" << outputfile << '\n';
+        out << name << ": *" << name_N << '\n';
+        if (not skip_uid) {
+            out << uid_N << ": *" << name_N << '\n';
+        }
+        out << '\n';
+        out << name_C << ": &" << name_C << '\n';
+        out << "    type: FESOM\n";
+        out << "    name: " << name_C << '\n';
+        out << "    base_name: " << name << '\n';
+        out << "    arrangement: C\n";
+        out << "    size: " << data.nb_cells << '\n';
+        if (not skip_uid) {
+            out << "    uid: " << uid_C << '\n';
+        }
+        out << "    data: file://" << outputfile << '\n';
+        if (not skip_uid) {
+            out << uid_C << ": *" << name_C << '\n';
+        }
+
+        std::string grid_spec_outputfile = args.getString( "output.grids", "atlas-fesom-grids.yaml" );
+        std::ofstream ofs( grid_spec_outputfile );
+        ofs << out.str();
+        ofs.close();
+        Log::info() << "Written gridspec to file " << grid_spec_outputfile << std::endl;
     }
+
 
     return success();
 }
 
-}  // namespace fesom
-}  // namespace atlas
+}  // namespace atlas::fesom
 
 //------------------------------------------------------------------------------------------------------
 

@@ -79,7 +79,7 @@ public:
             return nullptr;
         }
 
-        std::string uid = config.getString("uid");
+        std::string uid = config.getString("uid", config.getString("name","unknown_fesom_grid"));
         std::string arrangement = config.getString("arrangement");
         
         fesom::AtlasIOReader read(fesom::FesomDataFile(config.getString("data")));

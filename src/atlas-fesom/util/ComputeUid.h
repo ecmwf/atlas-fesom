@@ -20,7 +20,8 @@ namespace fesom {
 
 //------------------------------------------------------------------------------------------------------
 
-std::string compute_uid( const double lon[], const double lat[], size_t size );
+std::string compute_nodes_uid( const double lon[], const double lat[], size_t size );
+std::string compute_centroids_uid(const double lon[], const double lat[], size_t nb_nodes, const std::int64_t connectivity[], size_t nb_cells);
 
 //------------------------------------------------------------------------------------------------------
 

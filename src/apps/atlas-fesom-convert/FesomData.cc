@@ -20,9 +20,15 @@
 namespace atlas {
 namespace fesom {
 
-std::string atlas::fesom::FesomData::computeUid( const util::Config& config ) {
+std::string atlas::fesom::FesomData::computeUid( std::string arrangement ) {
     size_t size = lon.size();
-    return fesom::compute_uid( lon.data(), lat.data(), size );
+    if (arrangement == "N") {
+        return fesom::compute_nodes_uid( lon.data(), lat.data(), size );
+    }
+    else if (arrangement == "C") {
+        return fesom::compute_centroids_uid( lon.data(), lat.data(), size, connectivity_cell2node.data(), connectivity_cell2node.size() );
+    }
+    throw_Exception("Unknown arrangement for FESOM uid computation: " + arrangement, Here());
 }
 
 void atlas::fesom::FesomData::checkSetup() {

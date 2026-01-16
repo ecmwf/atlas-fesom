@@ -1,9 +1,4 @@
 ---
-atlas-fesom-grids-path:   "~atlas-fesom/share/atlas/grids/fesom/grids.yaml"
+atlas-fesom-grids-path:   ""     # Extra directories or files to search for Fesom grids, separated by ':'
 atlas-fesom-caching:      false  # Enable runtime caching of data files if not present in atlas-data-path
-
-# Advanced options for development or testing
-
-atlas-fesom-validate-uid: false  # Validates uid upon Fesom grid creation
-atlas-fesom-compute-uid:  False  # Recompute uid and ignore encoded uid
 ...
