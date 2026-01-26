@@ -37,14 +37,14 @@ CASE( "test fesom grid iterator" ) {
         SECTION( gridname ) {
             Grid grid( gridname );
 
-            EXPECT_EQ( grid.size(), section.size );
+            EXPECT_EQ( static_cast<size_t>(grid.size()), section.size );
 
             Log::info() << "grid.footprint() = " << eckit::Bytes( grid.footprint() ) << std::endl;
 
             idx_t n = 0;
             {
                 auto trace = Trace( Here(), "iterating" );
-                for ( auto& p : grid.lonlat() ) {
+                for ( [[maybe_unused]] auto& p : grid.lonlat() ) {
                     ++n;
                 }
                 trace.stop();

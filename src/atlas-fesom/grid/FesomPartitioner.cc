@@ -102,7 +102,7 @@ private:
     std::vector<metis::idx_t> adjncy_;
 };
 
-void build_node_graph(MetisGraph& graph, size_t nb_nodes, mdspan<const int64_t, extents<size_t,dynamic_extent,3>> connectivity_cell2node) {
+[[maybe_unused]] void build_node_graph(MetisGraph& graph, size_t nb_nodes, mdspan<const int64_t, extents<size_t,dynamic_extent,3>> connectivity_cell2node) {
     ATLAS_TRACE();
     std::vector<std::set<idx_t>> adjacency;
     adjacency.resize(nb_nodes);
@@ -135,12 +135,12 @@ void build_node_graph(MetisGraph& graph, size_t nb_nodes, mdspan<const int64_t, 
     graph.assign(nvtxs, std::move(xadj), std::move(adjncy));
 }
 
-void build_node_graph(MetisGraph& graph, size_t nb_nodes, const std::vector<std::array<int64_t,3>>& connectivity_cell2node) {
+[[maybe_unused]] void build_node_graph(MetisGraph& graph, size_t nb_nodes, const std::vector<std::array<int64_t,3>>& connectivity_cell2node) {
     mdspan<const int64_t,extents<size_t,dynamic_extent,3>> elements_mdspan(connectivity_cell2node.data()->data(), connectivity_cell2node.size());
     build_node_graph(graph, nb_nodes, elements_mdspan);
 }
 
-void build_node_graph_using_metis(MetisGraph& graph, size_t nb_nodes, mdspan<const int64_t, extents<size_t,dynamic_extent,3>> connectivity_cell2node) {
+[[maybe_unused]] void build_node_graph_using_metis(MetisGraph& graph, size_t nb_nodes, mdspan<const int64_t, extents<size_t,dynamic_extent,3>> connectivity_cell2node) {
 #if ATLAS_FESOM_HAVE_METIS
     ATLAS_TRACE();
     size_t nb_elems = connectivity_cell2node.extent(0);
@@ -169,7 +169,7 @@ void build_node_graph_using_metis(MetisGraph& graph, size_t nb_nodes, mdspan<con
 #endif
 }
 
-void build_node_graph_using_metis(MetisGraph& graph, size_t nb_nodes, const std::vector<std::array<int64_t,3>>& connectivity_cell2node) {
+[[maybe_unused]] void build_node_graph_using_metis(MetisGraph& graph, size_t nb_nodes, const std::vector<std::array<int64_t,3>>& connectivity_cell2node) {
     mdspan<const int64_t,extents<size_t,dynamic_extent,3>> elements_mdspan(connectivity_cell2node.data()->data(), connectivity_cell2node.size());
     build_node_graph_using_metis(graph, nb_nodes, elements_mdspan);
 }
@@ -178,7 +178,8 @@ void build_node_graph_using_metis(MetisGraph& graph, size_t nb_nodes, const std:
 void partition_graph(MetisGraph& graph, int nb_partitions, int part[]) {
     ATLAS_TRACE();
     if (nb_partitions == 1) {
-        for (size_t j=0; j<graph.nvtxs; ++j) {
+        size_t nvtxs = static_cast<size_t>(graph.nvtxs);
+        for (size_t j=0; j<nvtxs; ++j) {
             part[j] = 0;
         }
         return;
@@ -190,7 +191,6 @@ void partition_graph(MetisGraph& graph, int nb_partitions, int part[]) {
     options[METIS_OPTION_UFACTOR] = 30;   // imbalance tolerance (1-1000)
     metis::idx_t ncon = 1;
     metis::idx_t ec;
-    metis::idx_t n = graph.nvtxs;
     metis::idx_t np = nb_partitions;
     static_assert( std::is_same_v<metis::idx_t, int> );
     int status = METIS_PartGraphKway(

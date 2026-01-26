@@ -32,7 +32,6 @@ std::string atlas::fesom::FesomData::computeUid( std::string arrangement ) {
 }
 
 void atlas::fesom::FesomData::checkSetup() {
-    ATLAS_ASSERT( nb_nodes >= 0 );
     ATLAS_ASSERT( not lon.empty() );
     ATLAS_ASSERT( not lat.empty() );
     ATLAS_ASSERT( lon.size() == nb_nodes );

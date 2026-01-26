@@ -135,7 +135,7 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
         auto halo      = array::make_view<int, 1>(mesh.nodes().halo());
 
         const auto unstructured = UnstructuredGrid(grid);
-        const auto glb_nb_nodes = grid.size();
+        const size_t glb_nb_nodes = static_cast<size_t>(grid.size());
         for (size_t iglb = 0, i = 0; iglb < glb_nb_nodes; ++iglb) {
             if (partition_nodes[iglb]) {
                 PointLonLat p = unstructured.lonlat(iglb);
@@ -161,11 +161,10 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
         atlas::mesh::HybridElements::Connectivity& node_connectivity = mesh.cells().node_connectivity();
         auto cells_part = array::make_view<int, 1>(mesh.cells().partition());
         auto cells_gidx = array::make_view<gidx_t, 1>(mesh.cells().global_index());
-        auto cells_flags = array::make_view<int, 1>(mesh.cells().flags());
 
         auto& triangles = node_connectivity.block(0);
         idx_t triangle[3];
-        for( size_t iglb = 0, i=0; iglb < glb_nb_cells; ++iglb) {
+        for( int64_t iglb = 0, i=0; iglb < glb_nb_cells; ++iglb) {
             if (partition_cells[iglb]) {
                 cells_gidx(i) = iglb+1;
                 triangle[0] = to_local_node_numbering[glb_cell2node(iglb,0)];
@@ -215,7 +214,7 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
             auto lonlat    = array::make_view<double, 2>(mesh.nodes().lonlat());
             atlas::mesh::HybridElements::Connectivity& node_connectivity = mesh.cells().node_connectivity();
             auto& triangles = node_connectivity.block(0);
-            for( size_t i=0; i<mesh.cells().size(); ++i) {
+            for( idx_t i=0; i<mesh.cells().size(); ++i) {
                 auto p0_ll = PointLonLat{ lonlat(triangles(i,0),LON), lonlat(triangles(i,0),LAT) };
                 auto p1_ll = PointLonLat{ lonlat(triangles(i,1),LON), lonlat(triangles(i,1),LAT) };
                 auto p2_ll = PointLonLat{ lonlat(triangles(i,2),LON), lonlat(triangles(i,2),LAT) };
