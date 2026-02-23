@@ -11,6 +11,8 @@
 #include "atlas/grid.h"
 #include "atlas/meshgenerator.h"
 
+#include "eckit/system/LibraryManager.h"
+
 #include "tests/AtlasTestEnvironment.h"
 
 namespace atlas {
@@ -24,7 +26,7 @@ CASE( "test plugin" ) {
     // ATLAS_PLUGINS_SEARCH_PATHS=<path-to-binary-dir>
     // ATLAS_PLUGINS=fesom
 
-    EXPECT( eckit::system::Library::exists( "atlas-fesom" ) );
+    EXPECT( eckit::system::LibraryManager::exists( "atlas-fesom" ) );
     EXPECT( bool( MeshGenerator( "fesom" ) ) );
 }
 

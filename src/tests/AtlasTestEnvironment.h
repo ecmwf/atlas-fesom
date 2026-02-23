@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include <cctype>
 #include <algorithm>
+#include <cctype>  // ::tolower
 #include <chrono>
 #include <exception>
 #include <iomanip>
@@ -26,6 +26,7 @@
 #include "eckit/log/PrefixTarget.h"
 #include "eckit/mpi/Comm.h"
 #include "eckit/runtime/Main.h"
+#include "eckit/system/LibraryManager.h"
 #include "eckit/testing/Test.h"
 #include "eckit/types/Types.h"
 
@@ -43,7 +44,7 @@ namespace test {
 using eckit::types::is_approximately_equal;
 
 class Test;
-static Test* current_test_{nullptr};
+static Test* current_test_{ nullptr };
 
 static size_t ATLAS_MAX_FAILED_EXPECTS() {
     static size_t v = size_t( eckit::Resource<long>( "$ATLAS_MAX_FAILED_EXPECTS", 100 ) );
@@ -63,7 +64,7 @@ public:
     }
     ~Test() { current_test_ = nullptr; }
     void expect_failed( const std::string& message, const eckit::CodeLocation& location ) {
-        failures_.emplace_back( Failure{message, location} );
+        failures_.emplace_back( Failure{ message, location } );
         eckit::Log::error() << message << std::endl;
         if ( failures_.size() == ATLAS_MAX_FAILED_EXPECTS() ) {
             std::stringstream msg;
@@ -181,7 +182,7 @@ struct Printer<PointLonLat> {
 template <>
 struct Printer<eckit::CodeLocation> {
     static void print( std::ostream& out, const eckit::CodeLocation& location ) {
-        out << eckit::PathName{location.file()}.baseName() << " +" << location.line();
+        out << eckit::PathName{ location.file() }.baseName() << " +" << location.line();
     }
 };
 
@@ -300,8 +301,8 @@ static std::string debug_prefix( const std::string& libname ) {
 }
 
 void debug_addTarget( eckit::LogTarget* target ) {
-    for ( std::string libname : eckit::system::Library::list() ) {
-        const eckit::system::Library& lib = eckit::system::Library::lookup( libname );
+    for ( std::string libname : eckit::system::LibraryManager::list() ) {
+        const eckit::system::Library& lib = eckit::system::LibraryManager::lookup( libname );
         if ( lib.debug() ) {
             lib.debugChannel().addTarget( new eckit::PrefixTarget( debug_prefix( libname ), target ) );
         }
@@ -311,8 +312,8 @@ void debug_addTarget( eckit::LogTarget* target ) {
 }
 
 void debug_setTarget( eckit::LogTarget* target ) {
-    for ( std::string libname : eckit::system::Library::list() ) {
-        const eckit::system::Library& lib = eckit::system::Library::lookup( libname );
+    for ( std::string libname : eckit::system::LibraryManager::list() ) {
+        const eckit::system::Library& lib = eckit::system::LibraryManager::lookup( libname );
         if ( lib.debug() ) {
             lib.debugChannel().setTarget( new eckit::PrefixTarget( debug_prefix( libname ), target ) );
         }
@@ -322,8 +323,8 @@ void debug_setTarget( eckit::LogTarget* target ) {
 }
 
 void debug_reset() {
-    for ( std::string libname : eckit::system::Library::list() ) {
-        const eckit::system::Library& lib = eckit::system::Library::lookup( libname );
+    for ( std::string libname : eckit::system::LibraryManager::list() ) {
+        const eckit::system::Library& lib = eckit::system::LibraryManager::lookup( libname );
         if ( lib.debug() ) {
             lib.debugChannel().reset();
         }
