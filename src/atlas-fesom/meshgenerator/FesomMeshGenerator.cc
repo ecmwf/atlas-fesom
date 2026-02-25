@@ -277,10 +277,11 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
 }
 
 void FesomMeshGenerator::generate( const Grid& grid, Mesh& mesh ) const {
-    mpi::push(mpi_comm_);
-    grid::Partitioner partitioner( grid.partitioner().getString("type"), nb_parts_ );
-    grid::Distribution distribution( partitioner.partition(grid) );
-    mpi::pop();
+    auto distribution = [&]() {
+        mpi::Scope scope(mpi_comm_);
+        grid::Partitioner partitioner( grid.partitioner().getString("type"), nb_parts_ );
+        return grid::Distribution( partitioner.partition(grid) );
+    }();
     generate( grid, distribution, mesh );
 }
 
