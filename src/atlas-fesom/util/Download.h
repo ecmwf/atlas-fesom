@@ -14,11 +14,10 @@
 
 #include "eckit/filesystem/PathName.h"
 
-namespace atlas {
-namespace fesom {
+
+namespace atlas::fesom {
 
 size_t download( const std::string& url, const eckit::PathName& path );
 
 
 }  // namespace fesom
-}  // namespace atlas

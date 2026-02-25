@@ -29,11 +29,17 @@
 #endif
 
 
-namespace atlas {
-namespace fesom {
+namespace atlas::fesom {
 
 struct AutoIndent {
     AutoIndent() { Log::info().indent(); }
+
+    AutoIndent( const AutoIndent& ) = delete;
+    AutoIndent( AutoIndent&& )      = delete;
+
+    void operator=( const AutoIndent& ) = delete;
+    void operator=( AutoIndent&& )      = delete;
+
     ~AutoIndent() {
         if ( Log::info() ) {
             Log::info().unindent();
@@ -62,23 +68,19 @@ size_t download( const std::string& url, const eckit::PathName& path ) {
     ATLAS_ASSERT( parent_directory.exists() );
     Log::info() << "Downloading " << url << " to " << path << " ..." << std::endl;
     AutoIndent indent;
-    eckit::PathName path_tmp = path + ".download";
+    eckit::PathName path_tmp = eckit::PathName::unique(path);
     eckit::Length length;
-#ifdef ATLAS_FESOM_HAVE_ECKIT_URLHANDLE
     try {
+#ifdef ATLAS_ORCA_HAVE_ECKIT_URLHANDLE
         length = eckit::URLHandle( url ).saveInto( path_tmp );
-        if( length <= 0 && eckit_version_int() <= 11601 /*1.16.1*/ ) {
+        if ( length <= 0 && eckit_version_int() <= 11601 /*1.16.1*/ ) {
             // Problems with eckit::URLHandle fixed in further version
-            Log::warning() << "Download failed with eckit::URLHandle. Trying again with curl system call."
-                           << std::endl;
+            Log::warning() << "Download failed with eckit::URLHandle. Trying again with curl system call." << std::endl;
             length = curl_download( url, path_tmp );
         }
     }
-    catch ( eckit::SeriousBug ) {
-        Log::warning() << "Download failed with eckit::URLHandle. Trying again with curl system call."
-                       << std::endl;
-#else
-    try{
+    catch ( eckit::SeriousBug& ) {
+        Log::warning() << "Download failed with eckit::URLHandle. Trying again with curl system call." << std::endl;
 #endif
         length = curl_download( url, path_tmp );
     }
@@ -96,22 +98,22 @@ size_t download( const std::string& url, const eckit::PathName& path ) {
         std::string content;
         content.resize( path_tmp.size() );
 
-        eckit::FileHandle file(path_tmp);
+        eckit::FileHandle file( path_tmp );
         file.openForRead();
-        file.read(const_cast<char*>(content.data()), content.size());
+        file.read( const_cast<char*>( content.data() ), static_cast<long>( content.size() ) );
         file.close();
 
-        if ( content.find( "Error 404" ) ) {
+        if ( content.find( "Error 404" ) != 0 ) {
             path_tmp.unlink( true );
             return 0;
         }
     }
     eckit::PathName::rename( path_tmp, path );
     trace.stop();
-    Log::info() << "Download of " << eckit::Bytes( length ) << " took " << trace.elapsed() << " s." << std::endl;
+    Log::info() << "Download of " << eckit::Bytes( static_cast<double>( length ) ) << " took " << trace.elapsed()
+                << " s." << std::endl;
     return length;
 };
 
 
-}  // namespace fesom
-}  // namespace atlas
+}  // namespace atlas::fesom
