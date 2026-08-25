@@ -123,7 +123,7 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
         idx_t nb_cells = std::accumulate(partition_cells.begin(),partition_cells.end(),0);
         idx_t nb_nodes = std::accumulate(partition_nodes.begin(),partition_nodes.end(),0);
 
-        atlas::vector<idx_t> to_local_node_numbering(grid.size());
+        atlas::vector<idx_t> to_local_node_numbering(grid.size(), -1);
 
         mesh.nodes().resize(nb_nodes);
         auto xy        = array::make_view<double, 2>(mesh.nodes().xy());
@@ -133,27 +133,38 @@ void FesomMeshGenerator::generate( const Grid& grid, const grid::Distribution& d
         auto ridx      = array::make_indexview<idx_t, 1>(mesh.nodes().remote_index());
         auto partition = array::make_view<int, 1>(mesh.nodes().partition());
         auto halo      = array::make_view<int, 1>(mesh.nodes().halo());
+        auto flags     = array::make_view<int, 1>(mesh.nodes().flags());
 
         const auto unstructured = UnstructuredGrid(grid);
         const size_t glb_nb_nodes = static_cast<size_t>(grid.size());
-        for (size_t iglb = 0, i = 0; iglb < glb_nb_nodes; ++iglb) {
-            if (partition_nodes[iglb]) {
+        size_t i = 0;
+        for (int ghost_pass = 0; ghost_pass < 2; ++ghost_pass) {
+            for (size_t iglb = 0; iglb < glb_nb_nodes; ++iglb) {
+                if (not partition_nodes[iglb]) {
+                    continue;
+                }
+                const int node_partition = distribution.partition(iglb);
+                const bool is_ghost = node_partition != part_;
+                if (is_ghost != static_cast<bool>(ghost_pass)) {
+                    continue;
+                }
                 PointLonLat p = unstructured.lonlat(iglb);
                 xy(i, size_t(XX)) = p.lon();
                 xy(i, size_t(YY)) = p.lat();
                 // Identity projection, therefore (lon,lat) = (x,y)
                 lonlat(i, size_t(LON)) = p.lon();
                 lonlat(i, size_t(LAT)) = p.lat();
-                ghost(i)               = 0;
+                partition(i)           = node_partition;
+                ghost(i)               = is_ghost;
                 halo(i)                = 0;
                 gidx(i)                = iglb+1;
                 ridx(i)                = i;
-                partition(i)           = part_;
+                util::Topology::reset(flags(i));
+                if (ghost(i)) {
+                    util::Topology::set(flags(i), util::Topology::GHOST);
+                }
                 to_local_node_numbering[iglb] = i;
                 ++i;
-            }
-            else {
-                to_local_node_numbering[iglb] = -1;
             }
         }
 
