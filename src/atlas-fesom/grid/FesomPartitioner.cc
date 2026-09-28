@@ -75,7 +75,7 @@ struct MetisGraph {
     metis::idx_t* xadj = nullptr;
     metis::idx_t* adjncy = nullptr;
 
-    void assign(metis::idx_t _nvtxs, std::vector<metis::idx_t>&& _xadj, std::vector<idx_t>&& _adjncy ) {
+    void assign(metis::idx_t _nvtxs, std::vector<metis::idx_t>&& _xadj, std::vector<metis::idx_t>&& _adjncy ) {
         nvtxs = _nvtxs;
         xadj_ = std::move(_xadj);
         adjncy_ = std::move(_adjncy);
