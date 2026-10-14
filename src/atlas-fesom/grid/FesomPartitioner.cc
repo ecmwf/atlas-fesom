@@ -43,7 +43,17 @@ namespace metis {
 #endif
 
 #include "pluto/pluto.h"
+#if __has_include("atlas/array/mdspan.h")
+#include "atlas/array/mdspan.h"
+namespace atlas::grid::detail::partitioner {
+using array::dynamic_extent;
+using array::extents;
+using array::mdspan;
+}
+#else
+// Through Atlas 0.47.0, mdspan was in the atlas namespace.
 #include "atlas/mdspan.h"
+#endif
 #include "atlas/grid/Partitioner.h"
 #include "atlas/grid/SpecRegistry.h"
 #include "atlas/grid/Distribution.h"
